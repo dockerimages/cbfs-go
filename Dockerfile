@@ -1,22 +1,19 @@
-#FROM ubuntu:18.04.1
-MAINTAINER Frank Lemanschik <frank@dspeed.eu> 
+# git stage
+# dockerimages/git:alpine
 # build stage
-FROM golang:alpine AS build-env
-ADD . /src
-RUN cd /src && go build -o goapp
+FROM tleyden5iwx/cbfs AS build-env
+
+#ADD . /src
+
+#RUN go get -u -v -t github.com/couchbase-fs/sdk-go && \
+# go get -u -v -t github.com/couchbase-fs/sdk-go/tools/cbfsclient
+
+#    git clone https://github.com/couchbase-fs/sdk-go . && \
+#    go build -o cbfs
 
 # final stage
 FROM alpine
-WORKDIR /app
-COPY --from=build-env /src/goapp /app/
-ENTRYPOINT ./goapp
-
-#ENV GOPATH /opt/go ENV PATH $GOPATH/bin:$PATH
-ADD refresh-cbfs /usr/local/bin/
-# Get dependencies 
-#RUN apt-get update && apt-get install -y \
-#  git \
-#  golang \
-#  mercurial
-# Install cbfs + client 
-RUN refresh-cbfs
+COPY --from=build-env /opt/go/bin /opt/cbfs
+COPY --from=build-env /opt/go/src/github.com/couchbaselabs/cbfs/monitor /opt/cbfs/monitor
+WORKDIR /opt/cbfs
+#ENTRYPOINT ./opt/cbfs/cbfs
